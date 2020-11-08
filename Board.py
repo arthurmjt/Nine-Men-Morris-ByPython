@@ -23,6 +23,25 @@ class Board():
     '''
     def changeTurn(self): self.player *= -1
 
+    '''
+    Count number of men for a player
+    '''
+    def countMan(self, player):
+        count = 0
+        if (player == 1):
+            for i in range(24):
+                if (self.boardPoints[i] == 1):
+                    count += 1
+            return count
+
+        elif (player == -1):
+            for i in range(24):
+                if (self.boardPoints[i] == -1):
+                    count += 1
+            return count
+
+        else:
+            return 0
 
     '''
     Placing a man to the position by the player
@@ -56,7 +75,6 @@ class Board():
     @param pos: the index of the position we select
     @param topos: the index of the position we want a man to be 
     '''
-
     def moveMan(self, pos, topos):
         try:
             # the point is not empty
@@ -94,6 +112,54 @@ class Board():
             print("You cannot move this man")
 
 
+    '''
+    fly a man to a new position bu the player
+    @param pos: the index of the position we select
+    @param topos: the index of the position we want a man to be 
+    '''
+    def flyMan(self, pos, topos):
+        try:
+            # the point is not empty
+            if self.boardPoints[pos] != 0:
+
+                try:
+                    if self.boardPoints[topos] == 0:
+
+                        # if it is black player turn
+                        if self.player == 1:
+                            self.boardPoints[pos] = 0
+                            self.boardPoints[topos] = 1
+
+                        # if it is white player turn
+                        else:
+                            self.boardPoints[pos] = 0
+                            self.boardPoints[topos] = -1
+
+                    else:
+                        print("You cannot fly there")
+
+                except Exception:
+                    print("You cannot fly there")
+
+            else:
+                print("You cannot fly this man")
+
+        except Exception:
+            print("You cannot fly this man")
+
+
+    '''
+    Return true if someone win the game
+    Return false if nobody win th game
+    '''
+    def isWin(self):
+        if (self.countMan(1) <= 2):
+            return True
+        elif (self.countMan(-1) <= 2):
+            return True
+        else:
+            return False
+
 
     '''
     Check if it is a mill or not when the player placed a man here
@@ -111,10 +177,8 @@ class Board():
             '''
 
             if (self.boardPoints[pos1] == p and self.boardPoints[pos2] == p):
-                print("return true with player: ", p, " index: ", pos, " p1p2: ", pos1, pos2)
                 return True
             else:
-                print("return false with player: ", p, " index: ", pos, " p1p2: ", pos1, pos2)
                 return False
 
         if (player != 0):
@@ -145,7 +209,6 @@ class Board():
                     (check(1, 6, 14) or check(1, 21, 23)),
                     (check(1, 18, 20) or check(1, 21, 22)), # 23
                 ]
-                print("return : mill[pos]", mill[pos])
                 return mill[pos]
 
             elif (player == -1):
@@ -175,9 +238,9 @@ class Board():
                     (check(-1, 6, 14) or check(-1, 21, 23)),
                     (check(-1, 18, 20) or check(-1, 21, 22)),
                 ]
-                print("return : mill[pos]", mill[pos])
                 return mill[pos]
-            else: return False
+            else:
+                return False
 
         return False
 
