@@ -4,6 +4,7 @@ from Board import *
 
 board = Board()
 PIECE_SIZE = 10
+piece_color = "black"
 
 '''Global var '''
 pieceLeft = 18
@@ -13,9 +14,6 @@ flyfromIndex = -1
 '''Each available cell'''
 point_x = [35, 280, 525, 35, 525, 35, 280, 525, 133, 280, 427, 133, 427, 133, 280, 427, 231, 280, 329, 231, 329, 231, 280, 329]
 point_y = [30, 30, 30, 275, 275, 520, 520, 520, 128, 128, 128, 275, 275, 422, 422, 422, 226, 226, 226, 275, 275, 324, 324, 324]
-
-#point_x = [35, 35, 35, 133, 133, 133, 231, 231, 231, 280, 280, 280, 280, 280, 280, 329, 329, 329, 427, 427, 427, 525, 525, 525]
-#point_y = [30, 275, 520, 128, 275, 422, 226, 275, 324, 30, 128, 226, 324, 422, 520, 226, 275, 324, 128, 275, 422, 30, 275, 520]
 
 
 def boardOutput():
@@ -47,7 +45,6 @@ def boardOutput():
 
 def GUIplacing(event):
     global pieceLeft
-    #global click_x, click_y
     click_x = event.x
     click_y = event.y
     index = board.indexTransfer(click_x, click_y)
@@ -61,15 +58,19 @@ def GUIplacing(event):
         if (board.getPlayer() == 1 and board.getMan(index) == 1):
             canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
                                point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="black")
+
         elif (board.getPlayer() == -1 and board.getMan(index) == -1):
             canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
                                point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="white")
 
         if (board.isMill(index, board.getPlayer())):
             print("Mill now, remove one man")
+            varState.set("Remove a Man")
             canvas.bind("<Button-1>", GUIremove)
         else:
+            menuChangeColor(board.getPlayer())
             board.changeTurn()
+
 
 
 def GUIremove(event):
@@ -79,20 +80,24 @@ def GUIremove(event):
     print("remove index ", index)
     if ((board.getMan(index) == -board.getPlayer())):
         print("!!!!!!!!!!!!")
-        if (not board.isMill(index, -board.getPlayer())):
+        if (not board.isMill(index, -board.getPlayer()) or (board.isMill(index, -board.getPlayer()) and board.isAllmill(-board.getPlayer()))):
             board.removeMan(index, board.player)
             boardOutput()
             canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
-                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="grey")
+                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="saddlebrown")
 
 
             print("succful")
             print("now in that pos: ", board.getMan(index))
+            menuChangeColor(board.getPlayer())
             board.changeTurn()
+
             if (pieceLeft <= 0):
                 print("All men are gone!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                varState.set("Moving Man")
                 canvas.bind("<Button-1>", GUImovefrom)
             else:
+                varState.set("Placing Man")
                 canvas.bind("<Button-1>", GUIplacing)
         else:
             print("It is in a mill, please reselect one to remove")
@@ -108,9 +113,11 @@ def GUImovefrom(event):
     print("Turn: ", board.getPlayer(), " index ", movefromIndex, " who ", board.getMan(movefromIndex))
     if (board.getMan(movefromIndex) == board.getPlayer()):
         print("USER STORY 3 Move Star")
+        varState.set("Moving Man")
         canvas.bind("<Button-1>", GUImoveto)
     else:
         print("It is NOT your man, cannot be moved, please reselect one to move")
+        varState.set("Moving Man")
         canvas.bind("<Button-1>", GUImovefrom)
 
 def GUImoveto(event):
@@ -126,7 +133,7 @@ def GUImoveto(event):
 
             if (board.getPlayer() != 0 and board.getMan(movefromIndex) == 0):
                 canvas.create_oval(point_x[movefromIndex] - PIECE_SIZE, point_y[movefromIndex] - PIECE_SIZE,
-                                   point_x[movefromIndex] + PIECE_SIZE, point_y[movefromIndex] + PIECE_SIZE, fill="grey")
+                                   point_x[movefromIndex] + PIECE_SIZE, point_y[movefromIndex] + PIECE_SIZE, fill="saddlebrown")
 
             if (board.getPlayer() == 1 and board.getMan(index) == 1):
                 canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
@@ -137,18 +144,23 @@ def GUImoveto(event):
 
             if (board.isMill(index, board.getPlayer())):
                 print("Mill now, remove one man")
+                varState.set("Remove Man")
                 canvas.bind("<Button-1>", GUIremove2)
             else:
+                menuChangeColor(board.getPlayer())
                 board.changeTurn()
+                varState.set("Moving Man")
                 canvas.bind("<Button-1>", GUImovefrom)
 
 
         else:
             print(" move not finished, reselect a man to move ")
+            varState.set("Moving Man")
             canvas.bind("<Button-1>", GUImovefrom)
 
     else:
         print("Cannot move to here, reselect a man to move")
+        varState.set("Moving Man")
         canvas.bind("<Button-1>", GUImovefrom)
 
 
@@ -159,19 +171,22 @@ def GUIremove2(event):
     print("remove index ", index)
     if ((board.getMan(index) == -board.getPlayer())):
         print("!!!!!!!!!!!!")
-        if (not board.isMill(index, -board.getPlayer())):
+        if (not board.isMill(index, -board.getPlayer()) or (board.isMill(index, -board.getPlayer()) and board.isAllmill(-board.getPlayer()))):
             board.removeMan(index, board.player)
             boardOutput()
             canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
-                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="grey")
+                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="saddlebrown")
             print("succful")
             print("now in that pos: ", board.getMan(index))
+            menuChangeColor(board.getPlayer())
             board.changeTurn()
 
             if (board.countMan(1) <= 3 or board.countMan(-1) <=3):
+                varState.set("Flying Man")
                 canvas.bind("<Button-1>", GUIflyfrom)
 
             else:
+                varState.set("Moving Man")
                 canvas.bind("<Button-1>", GUImovefrom)
 
         else:
@@ -186,9 +201,11 @@ def GUIflyfrom(event):
     flyfromIndex = board.indexTransfer(click_x, click_y)
     if (board.getMan(flyfromIndex) == board.getPlayer()):
         print("USER STORY 4 fly Star")
+        varState.set("Flying Man")
         canvas.bind("<Button-1>", GUIflyto)
     else:
         print("It is NOT your man, cannot fly, please reselect one to fly")
+        varState.set("Flying Man")
         canvas.bind("<Button-1>", GUIflyfrom)
 
 
@@ -206,7 +223,7 @@ def GUIflyto(event):
             if (board.getPlayer() != 0 and board.getMan(flyfromIndex) == 0):
                 canvas.create_oval(point_x[flyfromIndex] - PIECE_SIZE, point_y[flyfromIndex] - PIECE_SIZE,
                                    point_x[flyfromIndex] + PIECE_SIZE, point_y[flyfromIndex] + PIECE_SIZE,
-                                   fill="grey")
+                                   fill="saddlebrown")
 
             if (board.getPlayer() == 1 and board.getMan(index) == 1):
                 canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
@@ -217,9 +234,12 @@ def GUIflyto(event):
 
             if (board.isMill(index, board.getPlayer())):
                 print("Mill now, remove one man")
+                varState.set("Remove Man")
                 canvas.bind("<Button-1>", GUIremove3)
             else:
+                menuChangeColor(board.getPlayer())
                 board.changeTurn()
+                varState.set("Flying Man")
                 canvas.bind("<Button-1>", GUIflyfrom)
 
         else:
@@ -232,7 +252,7 @@ def GUIflyto(event):
                 if (board.getPlayer() != 0 and board.getMan(flyfromIndex) == 0):
                     canvas.create_oval(point_x[flyfromIndex] - PIECE_SIZE, point_y[flyfromIndex] - PIECE_SIZE,
                                        point_x[flyfromIndex] + PIECE_SIZE, point_y[flyfromIndex] + PIECE_SIZE,
-                                       fill="grey")
+                                       fill="saddlebrown")
 
                 if (board.getPlayer() == 1 and board.getMan(index) == 1):
                     canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
@@ -243,18 +263,23 @@ def GUIflyto(event):
 
                 if (board.isMill(index, board.getPlayer())):
                     print("Mill now, remove one man")
+                    varState.set("Remove Man")
                     canvas.bind("<Button-1>", GUIremove3)
                 else:
+                    menuChangeColor(board.getPlayer())
                     board.changeTurn()
+                    varState.set("Flying Man")
                     canvas.bind("<Button-1>", GUIflyfrom)
 
 
             else:
                 print(" move not finished, reselect a man to move ")
+                varState.set("Flying Man")
                 canvas.bind("<Button-1>", GUIflyfrom)
 
     else:
         print("Cannot fly to here, reselect a man to move")
+        varState.set("Flying Man")
         canvas.bind("<Button-1>", GUIflyfrom)
 
 
@@ -265,26 +290,20 @@ def GUIremove3(event):
     print("remove index ", index)
     if ((board.getMan(index) == -board.getPlayer())):
         print("???????????")
-        if (not board.isMill(index, -board.getPlayer())):
+        if (not board.isMill(index, -board.getPlayer()) or (board.isMill(index, -board.getPlayer()) and board.isAllmill(-board.getPlayer()))):
             board.removeMan(index, board.player)
             boardOutput()
             canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
-                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="grey")
+                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="saddlebrown")
             print("succful")
             print("now in that pos: ", board.getMan(index))
             if (not board.isWin()):
+                menuChangeColor(board.getPlayer())
                 board.changeTurn()
+                varState.set("Flying Man")
                 canvas.bind("<Button-1>", GUIflyfrom)
             else:
-                if (board.getPlayer() == 1):
-                    print("Black player Win$$$")
-                    GUIwin
-                elif (board.getPlayer() == -1):
-                    print("White player Win$$$")
-                    GUIwin
-                else:
-                    print("Nobody Win***")
-                    GUIwin
+                GUIwin()
 
         else:
             print("It is in a mill, please reselect one to remove")
@@ -293,6 +312,16 @@ def GUIremove3(event):
 
 
 def GUIwin():
+    if (board.getPlayer() == 1):
+        print("Black Win")
+        varState.set("Black player Win$$$")
+    elif (board.getPlayer() == -1):
+        print("White player Win$$$")
+        varState.set("White Win")
+    else:
+        print("Nobody Win***")
+        varState.set("Nobody Win***")
+
     print("Game over")
 
 
@@ -303,15 +332,13 @@ def GUIwin():
 
 
 """Create a window for playing"""
-
 window = tk.Tk()
-
 window.title("Nine-Men-Morris")
 window.geometry("760x560")
 
 """Display the board"""
 # Background
-canvas = tk.Canvas(window, bg="grey", width=540, height=540)
+canvas = tk.Canvas(window, bg="saddlebrown", width=540, height=540)
 canvas.grid(row=0, column=0, rowspan=6)
 
 # Lines
@@ -327,10 +354,9 @@ canvas.create_line(35, 275, 231, 275)  # inter line
 canvas.create_line(329, 275, 525, 275)  # inter line
 
 # Points
-
 for i in range(24):
     canvas.create_oval(point_x[i] - PIECE_SIZE, point_y[i] - PIECE_SIZE,
-                       point_x[i] + PIECE_SIZE, point_y[i] + PIECE_SIZE, fill="grey")
+                       point_x[i] + PIECE_SIZE, point_y[i] + PIECE_SIZE, fill="saddlebrown")
 
 # Transparent chess pieces (set transparent chess pieces to facilitate the positioning of the coordinates of the subsequent move to the correct position)
 for i in point_x:
@@ -341,24 +367,86 @@ for i in point_x:
 
 # Num index from 1 to 7
 for i in range(7):
-    label = tk.Label(canvas, text=str(7 - i), fg="black", bg="grey",
+    label = tk.Label(canvas, text=str(7 - i), fg="black", bg="saddlebrown",
                      width=2, anchor=tk.E)
     label.place(x=2, y=85 * i + 10)
 
 # Later index from a to g
 count = 0
 for i in range(65, 72):
-    label = tk.Label(canvas, text=chr(i), fg="black", bg="grey")
+    label = tk.Label(canvas, text=chr(i), fg="black", bg="saddlebrown")
     label.place(x=85 * count + 10, y=525)
     count += 1
+
+
+'''Display the Menu'''
+def menuChangeColor(player):
+    global piece_color
+    if (player == 1):
+        varTrun.set("White Player's Turn")
+        piece_color = "White"
+        canvas_side.delete("show_piece")
+        canvas_side.create_oval(110 - PIECE_SIZE, 25 - PIECE_SIZE,
+                                110 + PIECE_SIZE, 25 + PIECE_SIZE,
+                                fill=piece_color, tags=("show_piece"))
+    elif (player == -1):
+        varTrun.set("Black Player's Turn")
+        piece_color = "Black"
+        canvas_side.delete("show_piece")
+        canvas_side.create_oval(110 - PIECE_SIZE, 25 - PIECE_SIZE,
+                                110 + PIECE_SIZE, 25 + PIECE_SIZE,
+                                fill=piece_color, tags=("show_piece"))
+    else:
+        return
+
+# def gameReset():
+#     board = Board()
+#     board.initBoard()
+#     varState.set("Placing Man")
+#     canvas.bind("<Button-1>", GUIplacing)
+
+# Display the colour of man
+canvas_side = tk.Canvas(window, width=220, height=50)
+canvas_side.grid(row=0, column=1)
+canvas_side.create_oval(110 - PIECE_SIZE, 25 - PIECE_SIZE,
+                        110 + PIECE_SIZE, 25 + PIECE_SIZE,
+                        fill=piece_color , tags=("show_piece"))
+
+# Display the turn
+varTrun = tk.StringVar()
+varTrun.set("Black Player's Turn")
+person_label = tk.Label(window, textvariable=varTrun, width=15, anchor=tk.CENTER,
+                        font=("Arial", 16))
+person_label.grid(row=1, column=1)
+
+# State
+varState = tk.StringVar()
+varState.set("Placing Man")
+result_label = tk.Label(window, textvariable=varState, width=12, height=4,
+                        anchor=tk.CENTER, fg="red", font=("Arial", 25))
+result_label.grid(row=2, column=1, rowspan=2)
+
+# Reset Button
+# reset_button = tk.Button(window, text="Reset", font=20,
+#                          width=8, command=gameReset)
+# reset_button.grid(row=5, column=1)
+
+# # End of game
+# var2 = tk.StringVar()
+# var2.set("")
+# game_label = tk.Label(window, textvariable=var2, width=12, height=4,
+#                       anchor=tk.CENTER, font=("Arial", 18))
+# game_label.grid(row=4, column=1)
+
+
+
+
+
 
 
 
 '''Main'''
 board.initBoard()
-print("main before!!!!!!!!!")
 canvas.bind("<Button-1>", GUIplacing)  # Click
-print("main after!!!!!!!!!")
-"""Loop the window"""
 
 window.mainloop()

@@ -176,7 +176,7 @@ class Board():
             @param pos2: second position index
             '''
 
-            if (self.boardPoints[pos1] == p and self.boardPoints[pos2] == p):
+            if (self.boardPoints[pos1] == p and self.boardPoints[pos2] == p and self.boardPoints[pos] == p):
                 return True
             else:
                 return False
@@ -209,6 +209,7 @@ class Board():
                     (check(1, 6, 14) or check(1, 21, 23)),
                     (check(1, 18, 20) or check(1, 21, 22)), # 23
                 ]
+                #print("ismill: ", pos, mill[pos])
                 return mill[pos]
 
             elif (player == -1):
@@ -238,11 +239,57 @@ class Board():
                     (check(-1, 6, 14) or check(-1, 21, 23)),
                     (check(-1, 18, 20) or check(-1, 21, 22)),
                 ]
+                #print("ismill: ", mill[pos])
                 return mill[pos]
             else:
                 return False
 
         return False
+
+    '''
+    Return true if the player has all mills
+    Return false if the player has least one of men that is not in a mill
+    '''
+    def isAllmill(self, player):
+        count = 0
+        num = self.countMan(player)
+        # count number of mills
+        for i in range(24):
+            print("ismill: ", i, self.isMill(i, player))
+            if (self.isMill(i, player)):
+                count += 1
+        print("count: ", count)
+        # Check here
+        if (num == 3 and count == 3):
+            print("All mill, can remove one with: ", num, count)
+            return True
+
+        elif(num == 5 and count == 5):
+            print("All mill, can remove one with: ", num, count)
+            return True
+
+        elif(num == 6 and count == 6):
+            print("All mill, can remove one with: ", num, count)
+            return True
+
+        elif(num == 7 and count == 7):
+            print("All mill, can remove one with: ", num, count)
+            return True
+
+        elif(num == 8 and count == 8):
+            print("All mill, can remove one with: ", num, count)
+            return True
+
+        elif(num == 9 and count == 9):
+            print("All mill, can remove one with: ", num, count)
+            return True
+
+        else:
+            print("Nor All mill with: ", num, count)
+            return False
+
+
+
 
     '''
     Given a pos and a player who you want to remove a man from, remove it
