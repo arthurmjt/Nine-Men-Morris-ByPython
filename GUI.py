@@ -71,6 +71,11 @@ def GUIplacing(event):
             menuChangeColor(board.getPlayer())
             board.changeTurn()
 
+        if (pieceLeft <= 0):
+            print("All men are gone!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            varState.set("Moving Man")
+            canvas.bind("<Button-1>", GUImovefrom)
+
 
 
 def GUIremove(event):
