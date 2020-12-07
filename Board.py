@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Board
+@author: Jingtang Ma(Arthur)
+"""
 class Board():
     def __init__(self):
         self.boardPoints = []

@@ -2,66 +2,65 @@ import unittest
 from Board import *
 
 
-class BoardTests:
-
-    # Should initialize board
-    def testInitBoard():
-        initBoard(self)
-
-    def testGetMan():
-        getMan(0)  # Point should be available
-        getMan(1)  # Point should be black
-        getMan(-1)  # Point should be white
-        getMan(2)  # Invalid input
-
-    # Should return player
-    def testGetPlayer():
-        getPlayer(self)
-
-    # Should change whose turn it is
-    def testChangeTurn():
-        changeTurn(self)
-
-    def testCountMan():
-        countMan(1);  # Should increment count for player 1
-        countMan(-1);  # Should increment count for player -1
-        countMan(2);  # Invalid input
+class BoardTests(unittest.TestCase):
 
     # Should place piece
     def testPlacingMan():
-        placingMan(self, 0)
-        placingMan(self, 1)
-        placingMan(self, -1)
-        placingMan(self, 3)  # Invalid input
+        excepText = "Couldn't get the input value"
+
+        secondTest = placingMan(self, 1)
+
+        self.assertEqual(firstTest, excepText, "Should output " + excepText)
 
     def testMoveMan():
-        moveMan(self, 1, 3)  # Should move black piece
-        moveMan(self, 2, 5)  # Should movve white piece
-        moveMan(self, 3)  # Invalid input
+        moveMan(self, 1, 3)
+        moveMan(self, 2, 5)
 
     def testFlyMan():
         flyMan(self, 0, 1)
         flyMan(self, 1, 1)  # Should bypass try block, print "You cannot fly this man")
 
-    def testIsWin():
-        isWin(1)  # Should return true
-        isWin(2)  # Should return false
+    # def testIsWin():
+    # firstTest = isWin(2)
+    # secondTest = isWin(1)
+    # thirdTest = isWin(4)
+
+    # self.assertTrue(firstTest, "Should return true")
+    # self.assertFalse(secondTest, "Should return true")
+    # self.assertFalse(thirdTest, "Should return false")
 
     def testIsMill():
-        isMill(self, 1, 1)
-        isMill(self, 2, 1)
-        isMill(self, -1, 1)
+        # Player == 0, so this statement should return false
+        firstTest = isMill(self, 1, 0)
+        self.assertFalse(firstTest, "Should return false")
 
     def testRemoveMan():
-        removeMan(0, 1)
-        removeMan(1, 1)
-        removeMan(3, 1)
-        removeMan(-1, 1)  # Invalid input
+        firstTest = removeMan(1, 10)
+        excepText = "Input was either out of bounds or wasn't an integer"
+
+        secondTest = removeMan(1, -1)
+        invalText = "Invalid position at: "
+
+        self.assertEqual(firstTest, excepText, "Should output " + excepText)
+        self.assertEqual(secondTest, invalText, "Should output " + invalText)
 
     def testIndexTransfer():
-        indexTransfer(self, 30, 30)  # Should return 0
-        indexTransfer(self, 133, 128)  # Should return 8
-        indexTransfer(self, 231, 226)  # Should return 16
-        indexTransfer(self, 280, 128)  # Should return 9
-        indexTransfer(self, 427, 128)  # Should return 10
-        indexTransfer(self, 525, 520)  # Should return 7
+        firstTest = IndexTransfer(self, 35, 30)
+        secondTest = IndexTransfer(self, 231, 226)
+        thirdTest = IndexTransfer(self, 427, 128)
+
+        self.assertEqual(firstTest, 0, "Should return 0")
+        self.assertEqual(secondTest, 16, "Should return 16")
+        self.assertEqual(thirdTest, 10, "Should dreturn 10")
+
+    def testAdjacentPos():
+        firstTest = adjacentPos(self, 1)
+        secondTest = adjacentPos(self, 4)
+        thirdTest = adjacentPos(self, 7)
+
+        self.assertEqual(firstTest, [0, 2, 9], "Should return list containing 0, 2, and 9")
+        self.assertEqual(secondTest, [2, 7, 12], "Should return list containing 2, 7, and 12")
+        self.assertEqual(thirdTest, [4, 6], "Should return list containing 4 and 6")
+
+
+unittest.main()

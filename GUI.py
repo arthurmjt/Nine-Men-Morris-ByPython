@@ -1,4 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+GUI
+@author: Jingtang Ma(Arthur)
+"""
 import tkinter as tk
+import tkinter.messagebox
+import random
 from Board import *
 
 
@@ -64,17 +71,25 @@ def GUIplacing(event):
                                point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="white")
 
         if (board.isMill(index, board.getPlayer())):
-            print("Mill now, remove one man")
+            print("Mill now, remove one man. Now is turn: ", board.getPlayer())
             varState.set("Remove a Man")
             canvas.bind("<Button-1>", GUIremove)
+            print("Why????????")
         else:
             menuChangeColor(board.getPlayer())
             board.changeTurn()
 
         if (pieceLeft <= 0):
-            print("All men are gone!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            varState.set("Moving Man")
-            canvas.bind("<Button-1>", GUImovefrom)
+            if (board.isMill(index, board.getPlayer())):
+                print("Mill now, remove one man. Now is turn: ", board.getPlayer())
+                varState.set("Remove a Man")
+                canvas.bind("<Button-1>", GUIremove)
+                print("Why????????")
+
+            else:
+                print("All men are gone!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                varState.set("Moving Man")
+                canvas.bind("<Button-1>", GUImovefrom)
 
 
 
@@ -98,7 +113,7 @@ def GUIremove(event):
             board.changeTurn()
 
             if (pieceLeft <= 0):
-                print("All men are gone!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                print("All men are gone in remove")
                 varState.set("Moving Man")
                 canvas.bind("<Button-1>", GUImovefrom)
             else:
@@ -330,6 +345,490 @@ def GUIwin():
     print("Game over")
 
 
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+AI VS Human
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+def GUIHumplacing(event):
+    global pieceLeft
+    click_x = event.x
+    click_y = event.y
+    index = board.indexTransfer(click_x, click_y)
+
+    if (board.getMan(index) == 0):
+        board.placingMan(index)
+        pieceLeft -= 1
+        boardOutput()
+
+        canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                            point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="black")
+
+        if (board.isMill(index, board.getPlayer())):
+            varState.set("Remove a Man")
+            canvas.bind("<Button-1>", GUIHumremove)
+        else:
+            menuChangeColor(board.getPlayer())
+            board.changeTurn()
+            GUIAIplacing()
+
+
+def GUIAIplacing():
+    global pieceLeft
+    index = random.randint(0,23)
+    while (board.getMan(index) != 0):
+        index = random.randint(0, 23)
+
+    if (board.getMan(index) == 0):
+        board.placingMan(index)
+        pieceLeft -= 1
+        boardOutput()
+
+        canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="white")
+
+        if (board.isMill(index, board.getPlayer())):
+            varState.set("Remove a Man")
+            GUIAIremove()
+        else:
+            menuChangeColor(board.getPlayer())
+            board.changeTurn()
+            canvas.bind("<Button-1>", GUIHumplacing)
+
+        if (pieceLeft <= 0):
+            print("All men are gone!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            varState.set("Moving Man")
+            canvas.bind("<Button-1>", GUIHummovefrom)
+
+def GUIHumremove(event):
+    click_x = event.x
+    click_y = event.y
+    index = board.indexTransfer(click_x, click_y)
+    if ((board.getMan(index) == -board.getPlayer())):
+        if (not board.isMill(index, -board.getPlayer()) or (board.isMill(index, -board.getPlayer()) and board.isAllmill(-board.getPlayer()))):
+            board.removeMan(index, board.player)
+            boardOutput()
+            canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="saddlebrown")
+
+
+            menuChangeColor(board.getPlayer())
+            board.changeTurn()
+
+            varState.set("Placing Man")
+            GUIAIplacing()
+        else:
+            print("It is in a mill, please reselect one to remove")
+    else:
+        print("It is your man, cannot be removed, please reselect one to remove")
+
+def GUIAIremove():
+    index = random.randint(0, 23)
+    while (board.getMan(index) != -board.getPlayer() or
+            board.isMill(index, -board.getPlayer()) and
+            not (board.isMill(index, -board.getPlayer()) and board.isAllmill(-board.getPlayer()))):
+        index = random.randint(0, 23)
+        print("AI remove index", index)
+
+    board.removeMan(index, board.player)
+    boardOutput()
+    canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                       point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="saddlebrown")
+
+
+    menuChangeColor(board.getPlayer())
+    board.changeTurn()
+
+    if (pieceLeft <= 0):
+        varState.set("Moving Man")
+        canvas.bind("<Button-1>", GUIHummovefrom)
+    else:
+        varState.set("Placing Man")
+        canvas.bind("<Button-1>", GUIHumplacing)
+
+
+
+def GUIHummovefrom(event):
+    global movefromIndex
+    click_x = event.x
+    click_y = event.y
+    movefromIndex = board.indexTransfer(click_x, click_y)
+    print("Turn: ", board.getPlayer(), " index ", movefromIndex, " who ", board.getMan(movefromIndex))
+    if (board.getMan(movefromIndex) == board.getPlayer()):
+        print("USER STORY 3 Move Star")
+        varState.set("Moving Man")
+        canvas.bind("<Button-1>", GUIHummoveto)
+    else:
+        print("It is NOT your man, cannot be moved, please reselect one to move")
+        varState.set("Moving Man")
+        canvas.bind("<Button-1>", GUIHummovefrom)
+
+def GUIAImovefrom():
+    global movefromIndex
+    movefromIndex = random.randint(0,23)
+    while (board.getMan(movefromIndex) != board.getPlayer()):
+        movefromIndex = random.randint(0, 23)
+
+    print("USER STORY 3 Move Star")
+    varState.set("Moving Man")
+    GUIAImoveto()
+
+
+def GUIHummoveto(event):
+    click_x = event.x
+    click_y = event.y
+    index = board.indexTransfer(click_x, click_y)
+    print("move index to: ", index)
+    if ((board.getMan(index) == 0)):
+        adjacent = board.adjacentPos(movefromIndex)
+        if index in adjacent:
+            board.moveMan(movefromIndex, index)
+            print("move finished")
+
+            if (board.getPlayer() != 0 and board.getMan(movefromIndex) == 0):
+                canvas.create_oval(point_x[movefromIndex] - PIECE_SIZE, point_y[movefromIndex] - PIECE_SIZE,
+                                   point_x[movefromIndex] + PIECE_SIZE, point_y[movefromIndex] + PIECE_SIZE, fill="saddlebrown")
+
+            canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="black")
+
+
+            if (board.isMill(index, board.getPlayer())):
+                print("Mill now, remove one man")
+                varState.set("Remove Man")
+                canvas.bind("<Button-1>", GUIHumremove2)
+            else:
+                menuChangeColor(board.getPlayer())
+                board.changeTurn()
+                varState.set("Moving Man")
+                GUIAImovefrom()
+
+        else:
+            print(" move not finished, reselect a man to move ")
+            varState.set("Moving Man")
+            canvas.bind("<Button-1>", GUIHummovefrom)
+
+    else:
+        print("Cannot move to here, reselect a man to move")
+        varState.set("Moving Man")
+        canvas.bind("<Button-1>", GUIHummovefrom)
+
+def GUIAImoveto():
+    TF = True
+    adjacent = board.adjacentPos(movefromIndex)
+    for i in adjacent:
+        if (board.getMan(i) == 0):
+            index = i
+            board.moveMan(movefromIndex, index)
+            TF = False
+            break
+
+    if (TF):
+        varState.set("Moving Man")
+        GUIAImovefrom()
+
+    canvas.create_oval(point_x[movefromIndex] - PIECE_SIZE, point_y[movefromIndex] - PIECE_SIZE,
+                       point_x[movefromIndex] + PIECE_SIZE, point_y[movefromIndex] + PIECE_SIZE, fill="saddlebrown")
+    canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                           point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="white")
+
+    if (board.isMill(index, board.getPlayer())):
+        print("Mill now, remove one man")
+        varState.set("Remove Man")
+        GUIAIremove2()
+    else:
+        menuChangeColor(board.getPlayer())
+        board.changeTurn()
+        varState.set("Moving Man")
+        canvas.bind("<Button-1>", GUIHummovefrom)
+
+
+
+def GUIHumremove2(event):
+    click_x = event.x
+    click_y = event.y
+    index = board.indexTransfer(click_x, click_y)
+    print("remove index ", index)
+    if ((board.getMan(index) == -board.getPlayer())):
+        print("!!!!!!!!!!!!")
+        if (not board.isMill(index, -board.getPlayer()) or (board.isMill(index, -board.getPlayer()) and board.isAllmill(-board.getPlayer()))):
+            board.removeMan(index, board.player)
+            boardOutput()
+            canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="saddlebrown")
+            print("succful")
+            print("now in that pos: ", board.getMan(index))
+            menuChangeColor(board.getPlayer())
+            board.changeTurn()
+
+            if (board.countMan(1) <=3):
+                varState.set("Flying Man")
+                canvas.bind("<Button-1>", GUIHumflyfrom)
+
+            else:
+                varState.set("Moving Man")
+                GUIAImovefrom()
+
+        else:
+            print("It is in a mill, please reselect one to remove")
+    else:
+        print("It is your man, cannot be removed, please reselect one to remove")
+
+
+def GUIAIremove2():
+    index = random.randint(0, 23)
+    while (board.getMan(index) != -board.getPlayer() or
+            board.isMill(index, -board.getPlayer()) and
+            not (board.isMill(index, -board.getPlayer()) and board.isAllmill(-board.getPlayer()))):
+        index = random.randint(0, 23)
+        print("AI remove index", index)
+
+    board.removeMan(index, board.player)
+    boardOutput()
+    canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                       point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="saddlebrown")
+
+
+    menuChangeColor(board.getPlayer())
+    board.changeTurn()
+
+    if (board.countMan(-1) <=3):
+        varState.set("Flying Man")
+        GUIAIflyfrom()
+
+    else:
+        varState.set("Moving Man")
+        canvas.bind("<Button-1>", GUIHummovefrom)
+
+
+
+def GUIHumflyfrom(event):
+    global flyfromIndex
+    click_x = event.x
+    click_y = event.y
+    flyfromIndex = board.indexTransfer(click_x, click_y)
+    if (board.getMan(flyfromIndex) == board.getPlayer()):
+        print("USER STORY 4 fly Star")
+        varState.set("Flying Man")
+        canvas.bind("<Button-1>", GUIHumflyto)
+    else:
+        print("It is NOT your man, cannot fly, please reselect one to fly")
+        varState.set("Flying Man")
+        canvas.bind("<Button-1>", GUIHumflyfrom)
+
+def GUIAIflyfrom():
+    global flyfromIndex
+    flyfromIndex = random.randint(0,23)
+    while (board.getMan(flyfromIndex) != board.getPlayer()):
+        flyfromIndex = random.randint(0, 23)
+
+    print("USER STORY 4 fly Star")
+    varState.set("Flying Man")
+    GUIAIflyto()
+
+
+def GUIHumflyto(event):
+    click_x = event.x
+    click_y = event.y
+    index = board.indexTransfer(click_x, click_y)
+    print("fly index to: ", index)
+    if ((board.getMan(index) == 0)):
+        if (board.countMan(board.getPlayer()) <= 3):
+            # can fly
+            board.flyMan(flyfromIndex, index)
+            print("fly finished")
+
+            canvas.create_oval(point_x[flyfromIndex] - PIECE_SIZE, point_y[flyfromIndex] - PIECE_SIZE,
+                               point_x[flyfromIndex] + PIECE_SIZE, point_y[flyfromIndex] + PIECE_SIZE,
+                               fill="saddlebrown")
+            canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="black")
+
+
+            if (board.isMill(index, board.getPlayer())):
+                print("Mill now, remove one man")
+                varState.set("Remove Man")
+                canvas.bind("<Button-1>", GUIHumremove3)
+            else:
+                menuChangeColor(board.getPlayer())
+                board.changeTurn()
+                varState.set("Flying Man")
+                GUIAIflyfrom()
+
+        else:
+            # cannot fly, just move
+            adjacent = board.adjacentPos(flyfromIndex)
+            if index in adjacent:
+                board.moveMan(flyfromIndex, index)
+                print("move finished")
+
+
+                canvas.create_oval(point_x[flyfromIndex] - PIECE_SIZE, point_y[flyfromIndex] - PIECE_SIZE,
+                                   point_x[flyfromIndex] + PIECE_SIZE, point_y[flyfromIndex] + PIECE_SIZE,
+                                   fill="saddlebrown")
+                canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                                   point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="black")
+
+                if (board.isMill(index, board.getPlayer())):
+                    print("Mill now, remove one man")
+                    varState.set("Remove Man")
+                    canvas.bind("<Button-1>", GUIHumremove3)
+                else:
+                    menuChangeColor(board.getPlayer())
+                    board.changeTurn()
+                    varState.set("Flying Man")
+                    GUIAIflyfrom()
+
+
+            else:
+                print(" move not finished, reselect a man to move ")
+                varState.set("Flying Man")
+                canvas.bind("<Button-1>", GUIHumflyfrom)
+
+    else:
+        print("Cannot fly to here, reselect a man to move")
+        varState.set("Flying Man")
+        canvas.bind("<Button-1>", GUIHumflyfrom)
+
+
+def GUIAIflyto():
+    if (board.countMan(board.getPlayer()) <= 3):
+        # can fly
+        index = random.randint(0, 23)
+        while ((board.getMan(index) != 0)):
+            index = random.randint(0, 23)
+
+        board.flyMan(flyfromIndex, index)
+        print("fly finished")
+
+
+        canvas.create_oval(point_x[flyfromIndex] - PIECE_SIZE, point_y[flyfromIndex] - PIECE_SIZE,
+                           point_x[flyfromIndex] + PIECE_SIZE, point_y[flyfromIndex] + PIECE_SIZE,
+                           fill="saddlebrown")
+
+        canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                           point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="white")
+
+        if (board.isMill(index, board.getPlayer())):
+            print("Mill now, remove one man")
+            varState.set("Remove Man")
+            GUIAIremove3()
+        else:
+            menuChangeColor(board.getPlayer())
+            board.changeTurn()
+            varState.set("Flying Man")
+            canvas.bind("<Button-1>", GUIHumflyfrom)
+
+    else:
+        # cannot fly, just move
+        TF = True
+        adjacent = board.adjacentPos(flyfromIndex)
+        for i in adjacent:
+            if (board.getMan(i) == 0):
+                index = i
+                board.moveMan(flyfromIndex, index)
+                TF = False
+                break
+
+        if (TF):
+            varState.set("Moving Man")
+            GUIAIflyfrom()
+
+
+
+        canvas.create_oval(point_x[flyfromIndex] - PIECE_SIZE, point_y[flyfromIndex] - PIECE_SIZE,
+                           point_x[flyfromIndex] + PIECE_SIZE, point_y[flyfromIndex] + PIECE_SIZE,
+                           fill="saddlebrown")
+
+        canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                           point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="white")
+
+        if (board.isMill(index, board.getPlayer())):
+            print("Mill now, remove one man")
+            varState.set("Remove Man")
+            canvas.bind("<Button-1>", GUIAIremove3)
+        else:
+            menuChangeColor(board.getPlayer())
+            board.changeTurn()
+            varState.set("Flying Man")
+            canvas.bind("<Button-1>", GUIHumflyfrom)
+
+def GUIHumremove3(event):
+    click_x = event.x
+    click_y = event.y
+    index = board.indexTransfer(click_x, click_y)
+    print("remove index ", index)
+    if ((board.getMan(index) == -board.getPlayer())):
+        print("???????????")
+        if (not board.isMill(index, -board.getPlayer()) or (board.isMill(index, -board.getPlayer()) and board.isAllmill(-board.getPlayer()))):
+            board.removeMan(index, board.player)
+            boardOutput()
+            canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                               point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="saddlebrown")
+            print("succful")
+            print("now in that pos: ", board.getMan(index))
+            if (not board.isWin()):
+                menuChangeColor(board.getPlayer())
+                board.changeTurn()
+                varState.set("Flying Man")
+                GUIAIflyfrom()
+            else:
+                GUIwin()
+
+        else:
+            print("It is in a mill, please reselect one to remove")
+    else:
+        print("It is your man, cannot be removed, please reselect one to remove")
+
+def GUIAIremove3():
+    index = random.randint(0, 23)
+    while (board.getMan(index) != -board.getPlayer() or
+            board.isMill(index, -board.getPlayer()) and
+            not (board.isMill(index, -board.getPlayer()) and board.isAllmill(-board.getPlayer()))):
+        index = random.randint(0, 23)
+        print("AI remove index", index)
+
+
+    board.removeMan(index, board.player)
+    boardOutput()
+    canvas.create_oval(point_x[index] - PIECE_SIZE, point_y[index] - PIECE_SIZE,
+                       point_x[index] + PIECE_SIZE, point_y[index] + PIECE_SIZE, fill="saddlebrown")
+    print("succful")
+    print("now in that pos: ", board.getMan(index))
+    if (not board.isWin()):
+        menuChangeColor(board.getPlayer())
+        board.changeTurn()
+        varState.set("Flying Man")
+        canvas.bind("<Button-1>", GUIHumflyfrom)
+    else:
+        GUIwin()
+
+
+
+def GUIwin():
+    if (board.getPlayer() == 1):
+        print("Black Win")
+        varState.set("Black player Win$$$")
+    elif (board.getPlayer() == -1):
+        print("White player Win$$$")
+        varState.set("White Win")
+    else:
+        print("Nobody Win***")
+        varState.set("Nobody Win***")
+
+    print("Game over")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -407,6 +906,7 @@ def menuChangeColor(player):
 # def gameReset():
 #     board = Board()
 #     board.initBoard()
+#     boardOutput()
 #     varState.set("Placing Man")
 #     canvas.bind("<Button-1>", GUIplacing)
 
@@ -432,9 +932,9 @@ result_label = tk.Label(window, textvariable=varState, width=12, height=4,
 result_label.grid(row=2, column=1, rowspan=2)
 
 # Reset Button
-# reset_button = tk.Button(window, text="Reset", font=20,
+# resetButton = tk.Button(window, text="Reset", font=20,
 #                          width=8, command=gameReset)
-# reset_button.grid(row=5, column=1)
+# resetButton.grid(row=5, column=1)
 
 # # End of game
 # var2 = tk.StringVar()
@@ -444,14 +944,22 @@ result_label.grid(row=2, column=1, rowspan=2)
 # game_label.grid(row=4, column=1)
 
 
+def hitHum():
+    tk.messagebox.showinfo(title='Message', message='Start with Human VS Human')
+    canvas.bind("<Button-1>", GUIplacing)  # Click
 
-
-
+def hitAI():
+    tk.messagebox.showinfo(title='Message', message='Start with AI VS Human')
+    canvas.bind("<Button-1>", GUIHumplacing)  # Click
 
 
 
 '''Main'''
 board.initBoard()
-canvas.bind("<Button-1>", GUIplacing)  # Click
+buttonHum = tk.Button(window, text='Human', bg='green', font=("Arial", 20), width=8, command=hitHum)
+buttonAI = tk.Button(window, text='AI', bg='red', font=("Arial", 20), width=8, command=hitAI)
+buttonHum.grid(row=4, column=1)
+buttonAI.grid(row=5, column=1)
+
 
 window.mainloop()
