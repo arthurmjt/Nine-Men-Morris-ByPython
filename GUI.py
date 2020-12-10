@@ -827,20 +827,6 @@ def GUIwin():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 """Create a window for playing"""
 window = tk.Tk()
 window.title("Nine-Men-Morris")
@@ -909,12 +895,7 @@ def menuChangeColor(player):
     else:
         return
 
-# def gameReset():
-#     board = Board()
-#     board.initBoard()
-#     boardOutput()
-#     varState.set("Placing Man")
-#     canvas.bind("<Button-1>", GUIplacing)
+
 
 # Display the colour of man
 canvas_side = tk.Canvas(window, width=220, height=50)
@@ -936,19 +917,6 @@ varState.set("Placing Man")
 result_label = tk.Label(window, textvariable=varState, width=12, height=4,
                         anchor=tk.CENTER, fg="red", font=("Arial", 20))
 result_label.grid(row=2, column=1, rowspan=2)
-
-# Reset Button
-# resetButton = tk.Button(window, text="Reset", font=20,
-#                          width=8, command=gameReset)
-# resetButton.grid(row=5, column=1)
-
-# # End of game
-# var2 = tk.StringVar()
-# var2.set("")
-# game_label = tk.Label(window, textvariable=var2, width=12, height=4,
-#                       anchor=tk.CENTER, font=("Arial", 18))
-# game_label.grid(row=4, column=1)
-
 
 def hitHum():
     tk.messagebox.showinfo(title='Message', message='Start with Human VS Human')
